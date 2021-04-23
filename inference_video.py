@@ -201,6 +201,7 @@ I1 = pad_image(I1)
 duplicate_count = 0
 # last valid frame (non-duplicate)
 last_Tensor = I1
+totat_ssim = 0
 
 while True:
     frame = read_buffer.get()
@@ -213,9 +214,8 @@ while True:
     I1_small = F.interpolate(I1, (32, 32), mode='bilinear', align_corners=False)
     ssim = ssim_matlab(I0_small, I1_small)
 
-    if ssim > 0.995:
-        if skip_frame % 100 == 0:
-            print("\nWarning: Your video has {} static frames, skipping them may change the duration of the generated video.".format(skip_frame))
+    if ssim > 0.999:
+            
         skip_frame += 1
         pbar.update(1)
         
@@ -254,6 +254,8 @@ while True:
     # reset if and only if not duplicate
     duplicate_count=0
     last_Tensor = I1
+
+
 if args.montage:
     write_buffer.put(np.concatenate((lastframe, lastframe), 1))
 else:
@@ -273,3 +275,4 @@ if args.png == False and fpsNotAssigned == True and not args.skip and not args.v
         print("Audio transfer failed. Interpolated video will have no audio")
         targetNoAudio = os.path.splitext(vid_out_name)[0] + "_noaudio" + os.path.splitext(vid_out_name)[1]
         os.rename(targetNoAudio, vid_out_name)
+print("\nWarning: Your video has {} static frames, skipping them may change the duration of the generated video.".format(skip_frame))
